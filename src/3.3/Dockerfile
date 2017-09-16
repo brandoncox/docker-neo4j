@@ -8,7 +8,11 @@ ENV NEO4J_SHA256=%%NEO4J_SHA%% \
     NEO4J_TARBALL=%%NEO4J_TARBALL%%
 ARG NEO4J_URI=%%NEO4J_DIST_SITE%%/%%NEO4J_TARBALL%%
 
+ENV HOME=/var/lib/neo4j
+
 COPY ./local-package/* /tmp/
+RUN useradd -u 1001 -r -g 0 -d ${HOME} -s /sbin/nologin \
+        -c "Default Application User" default
 
 RUN curl --fail --silent --show-error --location --remote-name ${NEO4J_URI} \
     && echo "${NEO4J_SHA256}  ${NEO4J_TARBALL}" | sha256sum -csw - \
@@ -26,6 +30,6 @@ VOLUME /data
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 EXPOSE 7474 7473 7687
-
+USER 1001
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["neo4j"]
